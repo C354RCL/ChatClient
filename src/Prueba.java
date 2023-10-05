@@ -73,6 +73,8 @@ public class Prueba extends javax.swing.JFrame {
     }
     
     public void commandInterpreter(String[] commandText){
+        
+        System.out.println(commandText[0]);
         switch(commandText[0]){
             case "m":
                 txtChat.append(commandText[1] + "\n"); //Se agrega el mensaje a la interfaz del chat
@@ -80,7 +82,10 @@ public class Prueba extends javax.swing.JFrame {
             case "lu":
                 updateUserList(userListGenerator(commandText[1]));
             break;
-                
+            case "nc":
+                PrivateChat privateChat = new PrivateChat();
+                privateChat.setVisible(true);
+            break;
         }
     }
     
@@ -276,11 +281,11 @@ public class Prueba extends javax.swing.JFrame {
     private void listUsernamesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listUsernamesMouseClicked
         try{
             
-            message = "nc^" + listUsernames.getSelectedValue(); //Se guarda en una variable el comando y el mensaje
+            message = "nc^" + username + "^" + listUsernames.getSelectedValue(); //Se guarda en una variable el comando y el mensaje
             msg = message.getBytes(); //Se pasa a bytes el mensaje completo
             outputstream.write(msg); //Se envia por el flujo de salida
             txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-            System.out.println(listUsernames.getSelectedValue());
+         
         }  
         catch(IOException err){
             System.out.println("Error: " + err);
