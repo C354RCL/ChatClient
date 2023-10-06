@@ -40,8 +40,8 @@ public class Prueba extends javax.swing.JFrame {
             String msg = new String(buffer); //Se crea la variable para almacenar el mensaje recibido
             msg = msg.trim(); //Se eliminan los caracteres vacios
             message = msg;
-            
-            commandInterpreter(commandReader(message));
+            //System.out.println(message);
+            commandInterpreter(commandReader(message));//Se interpreta el comando que se recibe del servidor y se procesa
             
             
             
@@ -50,57 +50,52 @@ public class Prueba extends javax.swing.JFrame {
         }
     }
     
-    
+    //Funcion para leer el comando
     public String[] commandReader(String message){
-        String[] commandText = message.split("\\^");
+        String[] commandText = message.split("\\^"); //Separa el comando del resto del texto
         
         return commandText;
         
     }
-    
+    //Funcion para ejecutar una accion dependiendo del comando leido
     public void commandInterpreter(String[] commandText){
         
-        System.out.println(commandText[0]);
+        //System.out.println(commandText[0]);
         switch(commandText[0]){
-            case "m":
+            case "m": //Si el comando es m significa que es un mensaje al chat grupal
                 txtChat.append(commandText[1] + "\n"); //Se agrega el mensaje a la interfaz del chat
             break;
-            case "lu":
-                updateUserList(userListGenerator(commandText[1]));
+            case "lu": //Si el comando es lu significa que es una lista de los usuarios conectados
+                updateUserList(userListGenerator(commandText[1])); //Actualiza la lista de usuarios
             break;
-            case "nc":
-                openPrivateChat(commandText);
-                
+            case "nc": //Si el comando es nc significa que se tiene que abrir una nueva ventana para un chat privado
+                openPrivateChat(commandText);//Se ejecuta la clase de chat privado
             break;
         }
     }
     
+    //Funcion para abrir un chat privado
     public void openPrivateChat(String[] commandText){
-        String privateUser = commandText[1];
-        int privatePort = Integer.parseInt(commandText[2]);
-        System.out.println(privateUser);
-        System.out.println(privatePort);
+        String privateUser = commandText[1]; //Se define con que usuario se hara la conexion privada
+        int privatePort = Integer.parseInt(commandText[2]); //Se guarda el puerto en el cual se encuentra el usuario con el cual se va a conectar
+        //System.out.println(privateUser);
+        //System.out.println(privatePort);
         
-        PrivateChat privateChat = new PrivateChat(username, privateUser, privatePort);
-        privateChat.setVisible(true);
+        PrivateChat privateChat = new PrivateChat(username, privateUser, privatePort); //Se crea el nuevo chat privado con los parametros de nombre de usuario, con quien se va a conectar y que puerto tiene
+        privateChat.setVisible(true); 
         
     }
     
+    //Funcion para separar los usuarios por tokens
     public String[] userListGenerator(String usuarios) {
         userlist = usuarios.split(";");
     return userlist;
 }
-    
+    //Funcion para actualizar la lista de usuarios disponibles
     public void updateUserList(String[] userlist){
-        
         listUsernames.setListData(userlist);    
-        
     }
     
-    //Funcion que actualiza los usuarios disponibles
-    public void updateUsers(){
-        
-    }
     //Funcion principal
     public Prueba() {
         initComponents();
@@ -115,8 +110,7 @@ public class Prueba extends javax.swing.JFrame {
                 public void run() {
                     try {
                         while (socket.isConnected()) {
-                            //ystem.out.println("Loop started");
-                            updateUsers();//Actualiza la lista de usuarios que hay en el chat
+                            //System.out.println("Loop started");
                             recibirMensajes(socket); //recibe mensajes del servidor mientras exista una conexion
                             
                         }
@@ -127,9 +121,6 @@ public class Prueba extends javax.swing.JFrame {
             };
             
             recibir.start(); //se inicia el hilo
-            
-           
-            
             
         } catch (Exception e){
             System.out.println("Error" + e);
@@ -282,7 +273,13 @@ public class Prueba extends javax.swing.JFrame {
             msg = message.getBytes(); //Se pasa a bytes el mensaje completo
             outputstream.write(msg); //Se envia por el flujo de salida
             txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-         
+            
+            //System.out.println(message);
+            //Abrir ventana de chat privado
+            String privateUser = listUsernames.getSelectedValue(); //Se guarda el usuario de la persona a la que se selecciono
+            int privatePort = 0; 
+            PrivateChat privateChat = new PrivateChat(username, privateUser, privatePort); //Se crea una clase de chat privado con los parametros necesarios al presionar uno de la lista de usuarios
+            privateChat.setVisible(true);
         }  
         catch(IOException err){
             System.out.println("Error: " + err);

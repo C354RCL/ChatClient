@@ -12,23 +12,8 @@ public final class PrivateChat extends javax.swing.JFrame {
     public byte[] msg;
     public boolean firstTime = true;
     public String username;
-    private static int PORT;
     public String privateUser;
     public int privatePort;
-  
-    
-    // Metodo que inicializa el servidor del cliente
-    private ServerSocket startServer() {
-        for(int PORT = 1024; PORT < 65535; PORT ++) {
-           try {
-                ServerSocket sSocket = new ServerSocket(PORT);
-                return sSocket;
-            } catch (IOException i) {
-                System.err.println("No se puede abrir el puerto" + i.getMessage());
-            } 
-        }
-        return null;
-    }
     
     //Funcion para conectar el cliente con el servidor
     public void conectarServer(String host, int port) {
@@ -54,11 +39,37 @@ public final class PrivateChat extends javax.swing.JFrame {
             inputStream.read(buffer); //Se lee el flujo de entrada
             String msg = new String(buffer); //Se crea la variable para almacenar el mensaje recibido
             msg = msg.trim(); //Se eliminan los caracteres vacios
-            //System.out.println(msg); 
-            txtChat.append(msg + "\n"); //Se agrega el mensaje a la interfaz del chat
-            System.out.println("Mensaje enviado: " + msg);
+            message = msg;
+            
+            //System.out.println(message);
+            commandInterpreter(commandReader(message));
+            
+            
+            
         } catch (Exception e) {
             System.out.println("Error: " + e);
+        }
+    }
+    
+    //Funcion para leer el comando
+    public String[] commandReader(String message){
+        String[] commandText = message.split("\\^");//Separa el comando del resto del texto
+        
+        return commandText;
+        
+    }
+    //Funcion para ejecutar una accion dependiendo del comando leido
+    public void commandInterpreter(String[] commandText){
+        
+        //System.out.println(commandText[0]);
+        switch(commandText[0]){
+            case "p": //Si el comando es p significa que es un mensaje privado
+                if(username.equals(commandText[1])){
+                   txtChat.append(privateUser + ": " + commandText[2] + "\n"); //Se agrega el mensaje a la interfaz del chat 
+                }
+                
+            break;
+            
         }
     }
     
@@ -70,7 +81,7 @@ public final class PrivateChat extends javax.swing.JFrame {
                 outputstream.write(msg); //Se envia por el flujo de salida
 
                 txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
+                //System.out.println("Bytes mandados");
                 
                 
         }catch (IOException er){
@@ -95,7 +106,7 @@ public final class PrivateChat extends javax.swing.JFrame {
                 outputstream.write(msg); //Se envia por el flujo de salida
 
                 txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
+                //System.out.println("Bytes mandados");
             }
         } catch (IOException pp) {
             System.out.println("Problemas en run()");
@@ -112,14 +123,13 @@ public final class PrivateChat extends javax.swing.JFrame {
         this.privateUser = privateUser;
         this.privatePort = privatePort;
         
-        System.out.println("Prueba" + username);
-        System.out.println(privateUser);
-        System.out.println(privatePort);
+        txtChat.append("Chat con: " + privateUser + "\n");
+        
+        //System.out.println("Prueba" + username);
+        //System.out.println(privateUser);
+        //System.out.println(privatePort);
         try{
-            ServerSocket serverSocket = new ServerSocket(0);
-            PORT = serverSocket.getLocalPort();
-            System.out.println("Puerto " + PORT);
-            conectarServer("localhost", PORT); //Se establece conexion con el servidor
+            conectarServer("localhost", 2099); //Se establece conexion con el servidor
             
             //Se crea un hilo para recibir flujos de entrada desde el servidor
             Thread recibir = new Thread(){
@@ -127,7 +137,7 @@ public final class PrivateChat extends javax.swing.JFrame {
                 public void run() {
                     try {
                         while (socket.isConnected()) {
-                            System.out.println("Loop started");
+                            //System.out.println("Loop started");
                             recibirMensajes(socket); //recibe mensajes del servidor mientras exista una conexion
                             
                         }
@@ -250,12 +260,13 @@ public final class PrivateChat extends javax.swing.JFrame {
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
         try{
-                message = txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
+                message = "p^" + privateUser + "^" + txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
                 msg = message.getBytes(); //Se pasa a bytes el mensaje completo
                 outputstream.write(msg); //Se envia por el flujo de salida
-
+                //System.out.println(message);
+                txtChat.append(username + ": " + txtMsg.getText() + "\n");
                 txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
+                
                 
                 
         }catch (IOException er){
