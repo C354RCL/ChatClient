@@ -2,29 +2,33 @@
 import java.io.*;
 import java.net.*;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Cesar
- */
-public class PrivateChat extends javax.swing.JFrame {
-
-    /**
-     * Creates new form Prueba
-     */
+public final class PrivateChat extends javax.swing.JFrame {
     
     //Se declaran variables que se usarán a lo largo del programa
     public Socket socket;
     public OutputStream outputstream;
+    public InputStream inputStream;
     public String message;
     public byte[] msg;
     public boolean firstTime = true;
     public String username;
+    private static int PORT;
+    public String privateUser;
+    public int privatePort;
+  
+    
+    // Metodo que inicializa el servidor del cliente
+    private ServerSocket startServer() {
+        for(int PORT = 1024; PORT < 65535; PORT ++) {
+           try {
+                ServerSocket sSocket = new ServerSocket(PORT);
+                return sSocket;
+            } catch (IOException i) {
+                System.err.println("No se puede abrir el puerto" + i.getMessage());
+            } 
+        }
+        return null;
+    }
     
     //Funcion para conectar el cliente con el servidor
     public void conectarServer(String host, int port) {
@@ -34,7 +38,7 @@ public class PrivateChat extends javax.swing.JFrame {
             System.out.println("Conectado a " + socket.getRemoteSocketAddress()); //Imprime en consola donde essta conectado
             outputstream = socket.getOutputStream(); //Se crea el flujo de salida
             
-            txtChat.setText("Escribe tu nombre de usuario y da click en enviar \n");//Pide al usuario escribir su nombre
+            
         }
         catch (Exception e){
             System.out.println("Error: " + e);
@@ -52,19 +56,70 @@ public class PrivateChat extends javax.swing.JFrame {
             msg = msg.trim(); //Se eliminan los caracteres vacios
             //System.out.println(msg); 
             txtChat.append(msg + "\n"); //Se agrega el mensaje a la interfaz del chat
-            
+            System.out.println("Mensaje enviado: " + msg);
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
     }
     
+    // Funcion que envia los mensajes recibidos
+    public void sendMessage() {
+        try{
+                message = "p^" + txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
+                msg = message.getBytes(); //Se pasa a bytes el mensaje completo
+                outputstream.write(msg); //Se envia por el flujo de salida
+
+                txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
+                System.out.println("Bytes mandados");
+                
+                
+        }catch (IOException er){
+            System.out.println("Error " + er);
+        }
+    }
+    
+    // Funcion que implementa la logica
+    public void run() {
+        try {
+            while(socket.isConnected()) {
+                InputStream inputstream = socket.getInputStream();
+                byte[] data = new byte[1024];
+                int bytesRead = inputStream.read(data);
+                
+                if(bytesRead == -1) {
+                    break;
+                }
+                
+                message = txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
+                msg = message.getBytes(); //Se pasa a bytes el mensaje completo
+                outputstream.write(msg); //Se envia por el flujo de salida
+
+                txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
+                System.out.println("Bytes mandados");
+            }
+        } catch (IOException pp) {
+            System.out.println("Problemas en run()");
+            System.out.println(pp.getMessage());
+        }
+    }
+    
+    
     
     //Funcion principal
-    public PrivateChat() {
+    public PrivateChat(String username, String privateUser, int privatePort) {
         initComponents();
+        this.username = username;
+        this.privateUser = privateUser;
+        this.privatePort = privatePort;
+        
+        System.out.println("Prueba" + username);
+        System.out.println(privateUser);
+        System.out.println(privatePort);
         try{
-            
-            conectarServer("localhost", 2099); //Se establece conexion con el servidor
+            ServerSocket serverSocket = new ServerSocket(0);
+            PORT = serverSocket.getLocalPort();
+            System.out.println("Puerto " + PORT);
+            conectarServer("localhost", PORT); //Se establece conexion con el servidor
             
             //Se crea un hilo para recibir flujos de entrada desde el servidor
             Thread recibir = new Thread(){
@@ -194,31 +249,15 @@ public class PrivateChat extends javax.swing.JFrame {
     }//GEN-LAST:event_txtMsgHierarchyChanged
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
-
-        //Cuando se presiona el boton de enviar se ejecuta esta parte del codigo
-
         try{
-            if(firstTime){
-                //Si es la primera vez que envia un mensaje este se envia al servidor con un token marcando que lo que se envia es el nombre de usuario
-                message = "u^" + txtMsg.getText(); //la variable mensaje empieza con el comando u^ para que el servidor lo interprete como nombre de usuario y además incluye el nombre de usuario después del caracter que utulizara par dividir tokens
-                username = txtMsg.getText(); //Se guarda el nombre de usuario que se ingreso en una variable
-                msg = message.getBytes(); //Se pasa el mensaje completo a bytes
-                outputstream.write(msg); //Se envian por el flujo de salida los bytes
-
-                txtMsg.setText(""); //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
-                firstTime = false; //Se actualiza la variable que establece si es la primera vez que se envía algo desde el cliente
-
-                txtChat.append("Tu nombre de usuario es " + username + "\n"); //Se le muestra al usuario cual es su nombre
-            }
-            else{
-                message = "m^" + txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
+                message = txtMsg.getText(); //Se guarda en una variable el comando y el mensaje
                 msg = message.getBytes(); //Se pasa a bytes el mensaje completo
                 outputstream.write(msg); //Se envia por el flujo de salida
 
                 txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
                 System.out.println("Bytes mandados");
-            }
+                
+                
         }catch (IOException er){
             System.out.println("Error " + er);
         }

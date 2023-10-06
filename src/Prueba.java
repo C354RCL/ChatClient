@@ -1,22 +1,7 @@
 
 import java.io.*;
 import java.net.*;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Cesar
- */
 public class Prueba extends javax.swing.JFrame {
-
-    /**
-     * Creates new form Prueba
-     */
     
     //Se declaran variables que se usarán a lo largo del programa
     public Socket socket;
@@ -55,6 +40,7 @@ public class Prueba extends javax.swing.JFrame {
             String msg = new String(buffer); //Se crea la variable para almacenar el mensaje recibido
             msg = msg.trim(); //Se eliminan los caracteres vacios
             message = msg;
+            
             commandInterpreter(commandReader(message));
             
             
@@ -83,10 +69,21 @@ public class Prueba extends javax.swing.JFrame {
                 updateUserList(userListGenerator(commandText[1]));
             break;
             case "nc":
-                PrivateChat privateChat = new PrivateChat();
-                privateChat.setVisible(true);
+                openPrivateChat(commandText);
+                
             break;
         }
+    }
+    
+    public void openPrivateChat(String[] commandText){
+        String privateUser = commandText[1];
+        int privatePort = Integer.parseInt(commandText[2]);
+        System.out.println(privateUser);
+        System.out.println(privatePort);
+        
+        PrivateChat privateChat = new PrivateChat(username, privateUser, privatePort);
+        privateChat.setVisible(true);
+        
     }
     
     public String[] userListGenerator(String usuarios) {
@@ -118,7 +115,7 @@ public class Prueba extends javax.swing.JFrame {
                 public void run() {
                     try {
                         while (socket.isConnected()) {
-                            System.out.println("Loop started");
+                            //ystem.out.println("Loop started");
                             updateUsers();//Actualiza la lista de usuarios que hay en el chat
                             recibirMensajes(socket); //recibe mensajes del servidor mientras exista una conexion
                             
@@ -260,7 +257,7 @@ public class Prueba extends javax.swing.JFrame {
                 outputstream.write(msg); //Se envian por el flujo de salida los bytes
 
                 txtMsg.setText(""); //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
+                //System.out.println("Bytes mandados");
                 firstTime = false; //Se actualiza la variable que establece si es la primera vez que se envía algo desde el cliente
 
                 txtChat.append("Tu nombre de usuario es " + username + "\n"); //Se le muestra al usuario cual es su nombre
@@ -271,7 +268,7 @@ public class Prueba extends javax.swing.JFrame {
                 outputstream.write(msg); //Se envia por el flujo de salida
 
                 txtMsg.setText("");  //Se limpia el campo de texto para que se escriba otro mensaje sin problemas
-                System.out.println("Bytes mandados");
+                //System.out.println("Bytes mandados");
             }
         }catch (IOException er){
             System.out.println("Error " + er);
